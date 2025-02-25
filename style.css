@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: black;
+    color: white;
+    font-family: 'DotGothic16', sans-serif;
+    /* display: flex; コメントアウト */
+}
+canvas {
+    border: 5px solid white;
+}
+
+#title {
+    position: absolute;
+    top: 80px;
+    left: 35px;
+    font-family: 'DotGothic16', sans-serif;
+    font-size: 150px;
+    color: white;
+}
+#title2 {
+    position: absolute;
+    top: 300px;
+    left: 40px;
+    font-family: 'DotGothic16', sans-serif;
+    font-size: 150px;
+    color: white;
+}
+#block {
+    position: absolute;
+    top: 300px;
+    right: 50px; /* 右端から50pxの位置 */
+    font-family: 'DotGothic16', sans-serif;
+    font-size: 80px;
+    color: white;
+}
+
+#gameCanvas {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300px;
+    height: 600px;
+    transform: translate(-50%, -50%);
+  }
+  
