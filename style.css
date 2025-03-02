@@ -14,29 +14,20 @@ canvas {
 
 #title {
     position: absolute;
-    top: 80px;
-    left: 35px;
+    top: 5vw;
+    left: 2.5vw;
     font-family: 'DotGothic16', sans-serif;
-    font-size: 150px;
+    font-size: 10vw;
     color: white;
 }
 #title2 {
     position: absolute;
-    top: 300px;
-    left: 40px;
+    top: 20vw;
+    left: 4.5vw;
     font-family: 'DotGothic16', sans-serif;
-    font-size: 150px;
+    font-size: 10vw;
     color: white;
 }
-#block {
-    position: absolute;
-    top: 300px;
-    right: 50px; /* 右端から50pxの位置 */
-    font-family: 'DotGothic16', sans-serif;
-    font-size: 80px;
-    color: white;
-}
-
 #gameCanvas {
     position: absolute;
     top: 50%;
@@ -45,4 +36,9 @@ canvas {
     height: 600px;
     transform: translate(-50%, -50%);
   }
-  
+  .element {
+    width: 200px;
+    height: 200px;
+    background-image: url('type.jpg');
+    background-size: cover;
+  }
