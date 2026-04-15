@@ -177,4 +177,6 @@ window.startStudy = startStudy;
 window.endStudy = endStudy;
 window.resetFilter = () => { selectedDate=null; render(); };
 
-loadRecords();
+window.onload = () => {
+  loadRecords();
+};
