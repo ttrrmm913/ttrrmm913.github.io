@@ -1,44 +1,109 @@
-@import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
-body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background-color: black;
-    color: white;
-    font-family: 'DotGothic16', sans-serif;
-    /* display: flex; コメントアウト */
-}
-canvas {
-    border: 5px solid white;
+/* =========================
+   🔥 全UI共通：座標制御
+========================= */
+.ui {
+  position: absolute;
+  left: var(--x, 0px);
+  top: var(--y, 0px);
 }
 
-#title {
-    position: absolute;
-    top: 5vw;
-    left: 2.5vw;
-    font-family: 'DotGothic16', sans-serif;
-    font-size: 10vw;
-    color: white;
+/* =========================
+   🎯 各UIの初期位置（ここいじるだけ）
+========================= */
+
+/* タイトル */
+.title {
+  --x: 20px;
+  --y: 5px;
+  font-size: 24px;
 }
-#title2 {
-    position: absolute;
-    top: 20vw;
-    left: 4.5vw;
-    font-family: 'DotGothic16', sans-serif;
-    font-size: 10vw;
-    color: white;
+
+/* 科目選択 */
+.subject {
+  --x: 20px;
+  --y: 70px;
 }
-#gameCanvas {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 300px;
-    height: 600px;
-    transform: translate(-50%, -50%);
-  }
-  .element {
-    width: 200px;
-    height: 200px;
-    background-image: url('type.jpg');
-    background-size: cover;
-  }
+
+/* ボタン */
+.buttons {
+  --x: 20px;
+  --y: 100px;
+}
+
+/* ステータス */
+.status {
+  --x: 20px;
+  --y: 160px;
+}
+
+/* タイマー */
+.timer {
+  --x: 20px;
+  --y: 190px;
+  color: red;
+}
+
+/* 記録一覧 */
+.list {
+  --x: 20px;
+  --y: 240px;
+  width: 300px;
+  height: 300px;
+  overflow-y: auto;
+}
+
+/* グラフ1 */
+.chart1 {
+  --x: 350px;
+  --y: 60px;
+  width: 400px;
+  height: 200px;
+}
+
+/* グラフ2 */
+.chart2 {
+  --x: 350px;
+  --y: 300px;
+  width: 400px;
+  height: 200px;
+}
+
+.chart1 canvas,
+.chart2 canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* カレンダー */
+.calendar {
+  --x: 50px;
+  --y: 600px;
+  display: grid;
+  grid-template-columns: repeat(7, 40px);
+  gap: 5px;
+}
+
+/* カレンダー詳細 */
+.calendarList {
+  --x: 800px;
+  --y: 300px;
+}
+
+/* =========================
+   📅 カレンダー見た目
+========================= */
+.day {
+  border: 1px solid #ccc;
+  padding: 5px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.green {
+  background: #00ff08;
+  color: white;
+}
+
+.gray {
+  background: #ddd;
+}
