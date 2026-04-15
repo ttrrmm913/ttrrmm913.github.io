@@ -118,6 +118,15 @@ let dailyChart = null;
 let subjectChart = null;
 
 function renderCharts() {
+  const canvas1 = document.getElementById("dailyChart");
+  const canvas2 = document.getElementById("subjectChart");
+
+  // 🔥 これでnull防止
+  if (!canvas1 || !canvas2) return;
+
+  const ctx1 = canvas1.getContext("2d");
+  const ctx2 = canvas2.getContext("2d");
+
   const target = selectedDate
     ? records.filter(r => r.date === selectedDate)
     : records;
@@ -126,25 +135,18 @@ function renderCharts() {
   const subject = {};
 
   target.forEach(r => {
-    daily[r.date] = (daily[r.date]||0) + r.points;
-    subject[r.subject] = (subject[r.subject]||0) + r.points;
+    daily[r.date] = (daily[r.date] || 0) + r.points;
+    subject[r.subject] = (subject[r.subject] || 0) + r.points;
   });
-
-  const ctx1 = document.getElementById("dailyChart").getContext("2d");
-  const ctx2 = document.getElementById("subjectChart").getContext("2d");
 
   if (dailyChart) dailyChart.destroy();
   if (subjectChart) subjectChart.destroy();
 
-  // ✅ 棒グラフ
   dailyChart = new Chart(ctx1, {
     type: "bar",
     data: {
       labels: Object.keys(daily),
-      datasets: [{
-        label: "ポイント",
-        data: Object.values(daily)
-      }]
+      datasets: [{ data: Object.values(daily) }]
     },
     options: {
       responsive: true,
@@ -152,23 +154,15 @@ function renderCharts() {
     }
   });
 
-  // 🔥 ここが重要修正（円グラフ）
   subjectChart = new Chart(ctx2, {
     type: "pie",
     data: {
       labels: Object.keys(subject),
-      datasets: [{
-        data: Object.values(subject)
-      }]
+      datasets: [{ data: Object.values(subject) }]
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false, // ← これが超重要
-      plugins: {
-        legend: {
-          position: "bottom"
-        }
-      }
+      maintainAspectRatio: false
     }
   });
 }
@@ -177,6 +171,6 @@ window.startStudy = startStudy;
 window.endStudy = endStudy;
 window.resetFilter = () => { selectedDate=null; render(); };
 
-window.onload = () => {
+document.addEventListener("DOMContentLoaded", () => {
   loadRecords();
-};
+});
