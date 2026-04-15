@@ -1,16 +1,52 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>テトリス</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Study App</title>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <canvas id="gameCanvas" width="300" height="600"></canvas>
-    <script src="script.js"></script>
+
+<h1 class="ui title">Study App</h1>
+
+<!-- ===== UI全部 absolute制御 ===== -->
+<div class="ui subject">
+  <select id="subject">
+    <option value="">科目</option>
+    <option>国語</option><option>地理</option><option>歴史</option>
+    <option>公民</option><option>数学</option><option>理科</option>
+    <option>英語</option><option>音楽</option><option>美術</option>
+    <option>家庭</option><option>技術</option><option>保体</option>
+  </select>
+</div>
+
+<div class="ui buttons">
+  <button onclick="startStudy()">開始</button>
+  <button onclick="endStudy()">終了</button>
+  <button onclick="resetFilter()">全体</button>
+  <button onclick="addTestData()">テスト</button>
+  <button onclick="clearAllData()">削除</button>
+</div>
+
+<p id="status" class="ui status">未開始</p>
+<h2 id="timer" class="ui timer">0分 0秒</h2>
+
+<ul id="list" class="ui list"></ul>
+
+<div class="ui chart1">
+  <canvas id="dailyChart"></canvas>
+</div>
+
+<div class="ui chart2">
+  <canvas id="subjectChart"></canvas>
+</div>
+
+<div id="calendar" class="ui calendar"></div>
+<ul id="calendarList" class="ui calendarList"></ul>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module" src="script.js"></script>
+
 </body>
 </html>
-<div id="title">Ryoma's</div>
-<div id="title2">Tetris</div>
-</style>

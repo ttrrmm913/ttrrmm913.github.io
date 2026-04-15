@@ -1,162 +1,180 @@
-// キャンバス要素と2Dコンテキストの取得
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, addDoc,
+  getDocs, deleteDoc, doc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ゲームの行数、列数、ブロックサイズ
-const ROWS = 20, COLS = 10, SIZE = 30;
-
-// 盤面を20行×10列の配列で初期化（すべて null）
-const board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
-
-// 新規テトリスミノ用の画像を読み込み（画像URLは適宜変更）
-const blockImage = new Image();
-blockImage.src = "images/your-image-path2.png";
-
-// テトロミノの定義
-const TETROMINOS = {
-  I: { shape: [[1, 1, 1, 1]], color: "cyan" },
-  O: { shape: [[1, 1], [1, 1]], color: "yellow" },
-  T: { shape: [[0, 1, 0], [1, 1, 1]], color: "purple" },
-  L: { shape: [[0, 0, 1], [1, 1, 1]], color: "orange" },
-  J: { shape: [[1, 0, 0], [1, 1, 1]], color: "blue" },
-  S: { shape: [[0, 1, 1], [1, 1, 0]], color: "green" },
-  Z: { shape: [[1, 1, 0], [0, 1, 1]], color: "red" },
-  X: { shape: [[1]], image: blockImage }
+const firebaseConfig = {
+  apiKey: "AIzaSyDjWHCEJmH6BGQJAfFc__9dQk0IDMvhZuc",
+  authDomain: "study-app-c1d27.firebaseapp.com",
+  projectId: "study-app-c1d27"
 };
 
-// 各テトリミノの出現確率（合計100）
-const TETROMINO_PROBABILITY = {
-  I: 15, O: 15, T: 15, L: 15, J: 15, S: 12, Z: 10, X: 3
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const subjectPoints = {
+  国語:4,地理:2,歴史:2,公民:3,
+  数学:6,理科:2,英語:3,
+  音楽:3,美術:3,家庭:3,技術:3,保体:3
 };
 
-let tetromino, pos, design;
-let dropInterval = 300;
-let lastDrop = 0;
-let score = 0;
-let gameOver = false;
+const DAILY_GOAL = 150;
 
-// 確率に基づいてランダムなテトロミノを取得
-function getRandomTetromino() {
-  const keys = Object.keys(TETROMINO_PROBABILITY);
-  const weightedArray = keys.flatMap(key => Array(TETROMINO_PROBABILITY[key]).fill(key));
-  return weightedArray[Math.floor(Math.random() * weightedArray.length)];
+let records = [];
+let selectedDate = null;
+
+let startTime = null;
+let currentSubject = null;
+let timerInterval = null;
+
+async function loadRecords() {
+  const snap = await getDocs(collection(db, "records"));
+  records = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  render();
 }
 
-// 新しいテトロミノを生成
-function newTetromino() {
-  const key = getRandomTetromino();
-  tetromino = TETROMINOS[key].shape;
-  design = TETROMINOS[key].image || TETROMINOS[key].color;
-  pos = { x: Math.floor(COLS / 2) - Math.floor(tetromino[0].length / 2), y: 0 };
-
-  if (collision(0, 0)) gameOver = true;
+async function saveRecord(record) {
+  await addDoc(collection(db, "records"), record);
+  loadRecords();
 }
 
-// 描画処理
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  board.forEach((row, y) => row.forEach((cell, x) => {
-    if (cell) drawCell(x, y, cell);
-  }));
-  if (!gameOver) {
-    tetromino.forEach((row, y) => row.forEach((cell, x) => {
-      if (cell) drawCell(pos.x + x, pos.y + y, design);
-    }));
+async function deleteRecord(id) {
+  await deleteDoc(doc(db, "records", id));
+  loadRecords();
+}
+
+function getLocalDate() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+}
+
+function render() {
+  renderList();
+  renderCharts();
+  renderCalendar();
+}
+
+function renderList() {
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  const display = selectedDate
+    ? records.filter(r => r.date === selectedDate)
+    : records;
+
+  display.forEach(r => {
+    const li = document.createElement("li");
+    li.textContent = `${r.subject} ${r.points}pt`;
+    list.appendChild(li);
+  });
+}
+
+function startStudy() {
+  const subject = document.getElementById("subject").value;
+  if (!subject) return;
+
+  startTime = new Date();
+  currentSubject = subject;
+
+  timerInterval = setInterval(() => {
+    const sec = Math.floor((new Date() - startTime)/1000);
+    document.getElementById("timer").textContent =
+      `${Math.floor(sec/60)}分 ${sec%60}秒`;
+  }, 1000);
+}
+
+async function endStudy() {
+  const sec = Math.floor((new Date() - startTime)/1000);
+  const time = Math.max(1, Math.floor(sec/60));
+
+  await saveRecord({
+    date: getLocalDate(),
+    subject: currentSubject,
+    time,
+    points: time * subjectPoints[currentSubject]
+  });
+
+  clearInterval(timerInterval);
+  startTime = null;
+}
+
+function renderCalendar() {
+  const cal = document.getElementById("calendar");
+  cal.innerHTML = "";
+
+  const now = new Date();
+  const last = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+
+  for (let d=1; d<=last; d++) {
+    const div = document.createElement("div");
+    div.className = "day";
+    div.textContent = d;
+    cal.appendChild(div);
   }
-  drawScore();
-  if (gameOver) drawgameOver();
-};
-
-// 1マスのブロック描画
-function drawCell(x, y, design) {
-  if (typeof design === "string") {
-    ctx.fillStyle = design;
-    ctx.fillRect(x * SIZE, y * SIZE, SIZE, SIZE);
-  } else if (design instanceof Image) {
-    ctx.drawImage(design, x * SIZE, y * SIZE, SIZE, SIZE);
-  }
-  ctx.strokeStyle = "black";
-  ctx.strokeRect(x * SIZE, y * SIZE, SIZE, SIZE);
 }
 
-// 衝突判定
-function collision(dx, dy, newShape = tetromino) {
-  return newShape.some((row, y) => row.some((cell, x) => {
-    let newX = pos.x + x + dx;
-    let newY = pos.y + y + dy;
-    return cell && (newX < 0 || newX >= COLS || newY >= ROWS || board[newY]?.[newX]);
-  }));
-}
+let dailyChart = null;
+let subjectChart = null;
 
-// 移動処理
-function move(dx, dy) {
-  if (!gameOver && !collision(dx, dy)) {
-    pos.x += dx;
-    pos.y += dy;
-    draw();
-  } else if (dy > 0) {
-    merge();
-    clearLines();
-    newTetromino();
-  }
-}
+function renderCharts() {
+  const target = selectedDate
+    ? records.filter(r => r.date === selectedDate)
+    : records;
 
-// 回転処理
-function rotate() {
-  if (!gameOver) {
-    const newTetrominoShape = tetromino[0].map((_, i) => tetromino.map(row => row[i])).reverse();
-    if (!collision(0, 0, newTetrominoShape)) {
-      tetromino = newTetrominoShape;
-      draw();
+  const daily = {};
+  const subject = {};
+
+  target.forEach(r => {
+    daily[r.date] = (daily[r.date]||0) + r.points;
+    subject[r.subject] = (subject[r.subject]||0) + r.points;
+  });
+
+  const ctx1 = document.getElementById("dailyChart").getContext("2d");
+  const ctx2 = document.getElementById("subjectChart").getContext("2d");
+
+  if (dailyChart) dailyChart.destroy();
+  if (subjectChart) subjectChart.destroy();
+
+  // ✅ 棒グラフ
+  dailyChart = new Chart(ctx1, {
+    type: "bar",
+    data: {
+      labels: Object.keys(daily),
+      datasets: [{
+        label: "ポイント",
+        data: Object.values(daily)
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false
     }
-  }
-}
+  });
 
-// 盤面にテトロミノを固定
-function merge() {
-  tetromino.forEach((row, y) => row.forEach((cell, x) => {
-    if (cell) board[pos.y + y][pos.x + x] = design;
-  }));
-}
-
-// 揃った行を削除
-function clearLines() {
-  board.forEach((row, y) => {
-    if (row.every(cell => cell)) {
-      board.splice(y, 1);
-      board.unshift(Array(COLS).fill(null));
-      score += 100;
+  // 🔥 ここが重要修正（円グラフ）
+  subjectChart = new Chart(ctx2, {
+    type: "pie",
+    data: {
+      labels: Object.keys(subject),
+      datasets: [{
+        data: Object.values(subject)
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false, // ← これが超重要
+      plugins: {
+        legend: {
+          position: "bottom"
+        }
+      }
     }
   });
 }
 
-// キーボード操作
-document.addEventListener("keydown", (e) => {
-  if (!gameOver) {
-    if (e.key === "ArrowLeft") move(-1, 0);
-    if (e.key === "ArrowRight") move(1, 0);
-    if (e.key === "ArrowDown") move(0, 1);
-    if (e.key === "ArrowUp") rotate();
-  }
-});
+window.startStudy = startStudy;
+window.endStudy = endStudy;
+window.resetFilter = () => { selectedDate=null; render(); };
 
-// フレームごとの更新処理
-function update(time = 0) {
-  requestAnimationFrame(update);
-  if (!gameOver && time - lastDrop > dropInterval) {
-    move(0, 1);
-    lastDrop = time;
-  }
-  draw();
-}
-
-// スコア描画
-function drawScore() {
-  ctx.fillStyle = "white";
-  ctx.font = "20px 'DotGothic16', sans-serif";
-  ctx.fillText("Score " + score, canvas.width - 100, 30);
-}
-
-// ゲーム開始
-newTetromino();
-update();
+loadRecords();
